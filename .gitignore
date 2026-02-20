@@ -1,0 +1,12 @@
+[Oo]bj/
+[Bb]in/
+*.user
+*.suo
+*.userprefs
+*.lock.json
+*.ide/
+.vs/
+.vscode/
+bin/
+obj/
+*.log
