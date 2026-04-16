@@ -4,20 +4,39 @@ on:
   push:
     branches:
       - main
+      - 4Scalping
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  deploy:
+  deploy-main:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Deploy to GitHub Pages
+      - name: Deploy PortalApi to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: PortalApi/wwwroot # The folder the action should deploy.
-          branch: gh-pages # The branch the action should deploy to.
+          folder: PortalApi/wwwroot
+          branch: gh-pages
+          target-folder: PortalApi
+
+  deploy-4scalping:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/4Scalping'
+    steps:
+      - name: Checkout 4Scalping
+        uses: actions/checkout@v4
+        with:
+          ref: 4Scalping
+
+      - name: Deploy 4Scalping to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: .
+          branch: gh-pages
+          target-folder: 4Scalping
