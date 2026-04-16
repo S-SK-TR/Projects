@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="tr" data-bs-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Dashboard</title>
+    <meta name="description" content="Dynamic Dashboard Portal - Admin & User Management">
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- GridStack -->
+    <link href="https://cdn.jsdelivr.net/npm/gridstack@10.1.0/dist/gridstack.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/gridstack@10.1.0/dist/gridstack-extra.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <!-- Custom CSS -->
+    <link href="css/style.css" rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- ============================================ -->
+    <!-- LOGIN SCREEN                                 -->
+    <!-- ============================================ -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-container">
+            <div class="login-glow"></div>
+            <div class="login-card">
+                <div class="login-header">
+                    <div class="login-logo">
+                        <i class="bi bi-grid-3x3-gap-fill"></i>
+                    </div>
+                    <h1>Portal Dashboard</h1>
+                    <p class="text-muted">Yönetim Paneline Hoş Geldiniz</p>
+                </div>
+                <form id="loginForm">
+                    <div class="mb-3">
+                        <label for="loginUsername" class="form-label">
+                            <i class="bi bi-person"></i> Kullanıcı Adı
+                        </label>
+                        <input type="text" class="form-control" id="loginUsername" placeholder="Kullanıcı adınızı girin"
+                            autocomplete="username" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="loginPassword" class="form-label">
+                            <i class="bi bi-lock"></i> Şifre
+                        </label>
+                        <input type="password" class="form-control" id="loginPassword" placeholder="Şifrenizi girin"
+                            autocomplete="current-password" required>
+                    </div>
+                    <div id="loginError" class="alert alert-danger d-none"></div>
+                    <button type="submit" class="btn btn-primary w-100 btn-login" id="loginBtn">
+                        <span class="spinner-border spinner-border-sm d-none" id="loginSpinner"></span>
+                        <span id="loginBtnText">Giriş Yap</span>
+                    </button>
+                </form>
+                <div class="login-footer">
+                    <small class="text-muted">© 2026 Portal Dashboard v1.0</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- MAIN APPLICATION SHELL                       -->
+    <!-- ============================================ -->
+    <div id="appShell" class="app-shell d-none">
+
+        <!-- Top Navbar -->
+        <nav class="navbar navbar-expand app-navbar" id="mainNavbar">
+            <div class="container-fluid">
+
+                <!-- LEFT: Brand + Dashboard Selector -->
+                <div class="d-flex align-items-center gap-3">
+                    <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+                        <i class="bi bi-grid-3x3-gap-fill text-primary"></i>
+                        <span class="fw-semibold">Portal</span>
+                    </a>
+                    <div class="dashboard-selector">
+                        <select class="form-select form-select-sm" id="dashboardSelect">
+                            <option value="">Dashboard Seçin...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- RIGHT: Controls -->
+                <div class="d-flex align-items-center gap-2">
+                    <!-- Last Updated -->
+                    <span class="badge bg-secondary-subtle border border-secondary text-muted me-2"
+                        id="lastUpdateBadge">
+                        <i class="bi bi-clock"></i>
+                        <span id="lastUpdateTime">--:--</span>
+                    </span>
+
+                    <!-- Edit Button (Admin Only) -->
+                    <button class="btn btn-sm btn-outline-warning admin-only d-none" id="btnEdit" title="Düzenle"
+                        data-bs-toggle="tooltip">
+                        <i class="bi bi-pencil-square"></i>
+                        <span class="d-none d-md-inline ms-1">Düzenle</span>
+                    </button>
+
+                    <!-- Save Button (Visible in Edit Mode) -->
+                    <button class="btn btn-sm btn-success d-none" id="btnSave" title="Kaydet" data-bs-toggle="tooltip">
+                        <i class="bi bi-check-lg"></i>
+                        <span class="d-none d-md-inline ms-1">Kaydet</span>
+                    </button>
+
+                    <!-- Cancel Edit Button -->
+                    <button class="btn btn-sm btn-outline-secondary d-none" id="btnCancelEdit" title="İptal">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+
+                    <!-- Refresh -->
+                    <button class="btn btn-sm btn-outline-info" id="btnRefresh" title="Yenile" data-bs-toggle="tooltip">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+
+                    <!-- Theme Toggle -->
+                    <button class="btn btn-sm btn-outline-secondary" id="btnThemeToggle" title="Temayı Değiştir"
+                        data-bs-toggle="tooltip">
+                        <i class="bi bi-moon-stars"></i>
+                    </button>
+
+                    <!-- Fullscreen -->
+                    <button class="btn btn-sm btn-outline-secondary" id="btnFullscreen" title="Tam Ekran"
+                        data-bs-toggle="tooltip">
+                        <i class="bi bi-arrows-fullscreen"></i>
+                    </button>
+
+                    <!-- Admin Menu -->
+                    <div class="dropdown admin-only d-none">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                            data-bs-toggle="dropdown">
+                            <i class="bi bi-gear"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="#" id="btnAdminUsers">
+                                    <i class="bi bi-people me-2"></i>Kullanıcı Yönetimi
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" id="btnAdminDashboards">
+                                    <i class="bi bi-layout-text-sidebar-reverse me-2"></i>Dashboard Yönetimi
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" id="btnAddWidget">
+                                    <i class="bi bi-plus-square me-2"></i>Widget Ekle
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- User Menu -->
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                            data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i>
+                            <span class="d-none d-md-inline ms-1" id="currentUsername"></span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <span class="dropdown-item-text">
+                                    <small class="text-muted" id="currentRole"></small>
+                                </span>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="#" id="btnLogout">
+                                    <i class="bi bi-box-arrow-right me-2"></i>Çıkış
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Auto-Refresh Progress Bar -->
+        <div class="refresh-progress-container" id="refreshProgressContainer">
+            <div class="refresh-progress-bar" id="refreshProgressBar"></div>
+        </div>
+
+        <!-- Dashboard Content -->
+        <main class="app-main" id="appMain">
+            <!-- Empty State -->
+            <div class="empty-state" id="emptyState">
+                <i class="bi bi-grid-3x3-gap"></i>
+                <h4>Dashboard Seçilmedi</h4>
+                <p class="text-muted">Soldaki menüden bir dashboard seçin veya yeni bir tane oluşturun.</p>
+            </div>
+
+            <!-- GridStack Container -->
+            <div class="grid-stack" id="gridStack"></div>
+        </main>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- MODALS                                       -->
+    <!-- ============================================ -->
+
+    <!-- ============================================ -->
+    <!-- MODALS                                       -->
+    <!-- ============================================ -->
+
+    <!-- User Management Modal -->
+    <div class="modal fade" id="usersModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-people me-2"></i>Kullanıcı Yönetimi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex justify-content-end mb-3">
+                        <button class="btn btn-sm btn-primary" id="btnAddUser">
+                            <i class="bi bi-person-plus me-1"></i>Yeni Kullanıcı
+                        </button>
+                    </div>
+                    <!-- Add User Form (collapsed) -->
+                    <div class="collapse mb-3" id="addUserCollapse">
+                        <div class="card card-body">
+                            <form id="addUserForm">
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-md-4">
+                                        <label class="form-label small">Kullanıcı Adı</label>
+                                        <input type="text" class="form-control form-control-sm" id="newUsername"
+                                            required>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label small">Şifre</label>
+                                        <input type="password" class="form-control form-control-sm" id="newPassword"
+                                            required>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label small">Rol</label>
+                                        <select class="form-select form-select-sm" id="newRole">
+                                            <option value="User">Kullanıcı</option>
+                                            <option value="Admin">Admin</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="submit" class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-check-lg"></i> Ekle
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Kullanıcı Adı</th>
+                                    <th>Rol</th>
+                                    <th>Kayıt Tarihi</th>
+                                    <th class="text-end">İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Management Modal -->
+    <div class="modal fade" id="dashboardsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-layout-text-sidebar-reverse me-2"></i>Dashboard Yönetimi
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex justify-content-end mb-3">
+                        <button class="btn btn-sm btn-primary" id="btnAddDashboard">
+                            <i class="bi bi-plus-square me-1"></i>Yeni Dashboard
+                        </button>
+                    </div>
+                    <!-- Add Dashboard Form -->
+                    <div class="collapse mb-3" id="addDashboardCollapse">
+                        <div class="card card-body">
+                            <form id="addDashboardForm">
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-md-5">
+                                        <label class="form-label small">Dashboard Adı</label>
+                                        <input type="text" class="form-control form-control-sm" id="newDashboardName"
+                                            required>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label small">Yenileme (sn)</label>
+                                        <input type="number" class="form-control form-control-sm"
+                                            id="newRefreshInterval" value="30" min="0" step="5">
+                                    </div>
+                                    <div class="col-md-2 d-flex align-items-end">
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="newIsDefault">
+                                            <label class="form-check-label small" for="newIsDefault">Varsayılan</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="submit" class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-check-lg"></i> Oluştur
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Ad</th>
+                                    <th>Yenileme</th>
+                                    <th>Varsayılan</th>
+                                    <th>Son Güncelleme</th>
+                                    <th class="text-end">İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashboardsTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Widget Modal -->
+    <div class="modal fade" id="addWidgetModal" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-plus-square me-2"></i>Widget Ekle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="widget-catalog">
+                        <div class="row g-3">
+                            <!-- Analytics & Charts -->
+                            <div class="col-12">
+                                <h6 class="border-bottom pb-2 mb-3">Analitik ve Grafikler
+                                </h6>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="widget-catalog-item" data-widget-type="chart" data-subtype="column">
+                                    <i class="bi bi-bar-chart-fill text-primary"></i>
+                                    <span>Grafik (Chart)</span>
+                                    <small class="text-muted d-block mt-1" style="font-size: 0.7em;">Pie, Bar, Line,
+                                        Area...</small>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="widget-catalog-item" data-widget-type="cycle-time">
+                                    <i class="bi bi-clock-history text-info"></i>
+                                    <span>Devir Süresi (Cycle Time)</span>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="widget-catalog-item" data-widget-type="lead-time">
+                                    <i class="bi bi-hourglass-split text-warning"></i>
+                                    <span>Teslim Süresi (Lead Time)</span>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="widget-catalog-item" data-widget-type="pivot-table">
+                                    <i class="bi bi-table"></i>
+                                    <span>Pivot Tablo</span>
+                                </div>
+                            </div>
+
+                            <!-- DevOps & Work Items -->
+                            <div class="col-12 mt-4">
+                                <h6 class="border-bottom pb-2 mb-3">DevOps & İş Öğeleri</h6>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="widget-catalog-item" data-widget-type="assigned-to-me">
+                                    <i class="bi bi-person-check-fill text-success"></i>
+                                    <span>Bana Atananlar</span>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="widget-catalog-item" data-widget-type="work-items">
+                                    <i class="bi bi-kanban text-danger"></i>
+                                    <span>İş Öğeleri (Work Items)</span>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="widget-catalog-item" data-widget-type="query-result">
+                                    <i class="bi bi-search text-secondary"></i>
+                                    <span>Sorgu Sonucu</span>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="widget-catalog-item" data-widget-type="code-tile">
+                                    <i class="bi bi-code-slash"></i>
+                                    <span>Code Tile</span>
+                                </div>
+                            </div>
+
+                            <!-- Other -->
+                            <div class="col-12 mt-4">
+                                <h6 class="border-bottom pb-2 mb-3">Diğer</h6>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="widget-catalog-item" data-widget-type="embedded-page">
+                                    <i class="bi bi-window text-info"></i>
+                                    <span>Gömülü Web Sayfası</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Widget Config Modal -->
+    <div class="modal fade" id="widgetConfigModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-gear me-2"></i>Widget Ayarları</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="widgetConfigForm">
+                        <input type="hidden" id="configWidgetId">
+
+                        <!-- Common Settings -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted">Başlık</label>
+                                <input type="text" class="form-control form-control-sm" id="configTitle" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small text-muted">Genişlik (Grid)</label>
+                                <input type="number" class="form-control form-control-sm" id="configWidth" min="1"
+                                    max="12">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small text-muted">Yükseklik (Grid)</label>
+                                <input type="number" class="form-control form-control-sm" id="configHeight" min="1"
+                                    max="12">
+                            </div>
+                        </div>
+
+                        <!-- Conditional Settings: Chart -->
+                        <div class="card bg-secondary bg-opacity-10 border-0 mb-3 d-none config-section"
+                            id="configSectionChart">
+                            <div class="card-header bg-transparent border-0 fw-bold small text-uppercase">Grafik
+                                Ayarları</div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label small">Grafik Tipi</label>
+                                        <select class="form-select form-select-sm" id="configChartType">
+                                            <option value="bar">Bar (Çubuk)</option>
+                                            <option value="column">Column (Sütun)</option>
+                                            <option value="line">Line (Çizgi)</option>
+                                            <option value="area">Area (Alan)</option>
+                                            <option value="pie">Pie (Pasta)</option>
+                                            <option value="stacked-bar">Stacked Bar</option>
+                                            <option value="stacked-area">Stacked Area</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small">Grupla (Group By)</label>
+                                        <select class="form-select form-select-sm" id="configGroupBy">
+                                            <option value="status">Durum (Status)</option>
+                                            <option value="severity">Önem (Severity)</option>
+                                            <option value="assigned">Atanan Kişi</option>
+                                            <option value="date">Tarih</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small">Toplama (Aggregation)</label>
+                                        <select class="form-select form-select-sm" id="configAggregation">
+                                            <option value="count">Sayı (Count)</option>
+                                            <option value="sum">Toplam (Sum)</option>
+                                            <option value="avg">Ortalama (Avg)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small">Sıralama (Sort Series)</label>
+                                        <select class="form-select form-select-sm" id="configSort">
+                                            <option value="asc">Artan</option>
+                                            <option value="desc">Azalan</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small">Renk Teması</label>
+                                        <select class="form-select form-select-sm" id="configColor">
+                                            <option value="primary">Mavi (Primary)</option>
+                                            <option value="success">Yeşil (Success)</option>
+                                            <option value="warning">Turuncu (Warning)</option>
+                                            <option value="danger">Kırmızı (Danger)</option>
+                                            <option value="multi">Çok Renkli</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Conditional Settings: Creating Pivot Specific Fields (Rows/Cols) (Example) -->
+                        <div class="card bg-secondary bg-opacity-10 border-0 mb-3 d-none config-section"
+                            id="configSectionPivot">
+                            <div class="card-header bg-transparent border-0 fw-bold small text-uppercase">Pivot Ayarları
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label small">Satırlar (Rows)</label>
+                                        <select class="form-select form-select-sm" id="configPivotRows">
+                                            <option value="assignee">Atanan Kişi</option>
+                                            <option value="priority">Öncelik</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small">Sütunlar (Columns)</label>
+                                        <select class="form-select form-select-sm" id="configPivotCols">
+                                            <option value="state">Durum</option>
+                                            <option value="tags">Etiketler</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Conditional Settings: Embed -->
+                        <div class="card bg-secondary bg-opacity-10 border-0 mb-3 d-none config-section"
+                            id="configSectionEmbed">
+                            <div class="card-body">
+                                <label class="form-label small">Web Sayfası URL</label>
+                                <input type="url" class="form-control form-control-sm" id="configUrl"
+                                    placeholder="https://example.com">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-check-lg me-1"></i>Uygula
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- GridStack JS -->
+    <script src="https://cdn.jsdelivr.net/npm/gridstack@10.1.0/dist/gridstack-all.js"></script>
+    <!-- App Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/widgets.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
