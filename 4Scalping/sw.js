@@ -1,1 +1,0 @@
-// Content of the sw.js file from 4Scalping branch
